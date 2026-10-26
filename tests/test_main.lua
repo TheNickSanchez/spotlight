@@ -333,3 +333,19 @@ test("the bar stays at the page's text edge, not the sentence's indent", functio
     ok(g3.bands[1].x > g1.bands[1].x)
     eq(g3.bars[1].x, g1.bars[1].x)
 end)
+
+test("pieces of one line side by side (a drop cap) are both lit, without overlapping", function()
+    local plugin, doc = newPlugin()
+    plugin:setEnabled(true)
+    doc.getScreenBoxesFromPositions = function()
+        return {
+            { x = 68, y = 1480, w = 42, h = 64 },   -- the drop cap
+            { x = 110, y = 1481, w = 1034, h = 63 }, -- the rest of the line
+        }
+    end
+    local g = plugin:geometry({ first_e = "x", last_e = "y", lead = 0, trail = 0, pos0 = "a", pos1 = "b" })
+    eq(#g.bands, 2)
+    ok(g.bands[2].h == 63, "the rest of the line keeps its height")
+    eq(g.bands[2].x, g.bands[1].x + g.bands[1].w)       -- starts where the drop cap's band ends
+    eq(g.bands[2].x + g.bands[2].w, 110 + 1034 + 2)      -- and still reaches the end of the line
+end)

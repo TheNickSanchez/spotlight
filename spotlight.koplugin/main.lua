@@ -1297,14 +1297,23 @@ function Spotlight:geometry(s)
     local columns = {}
     for _i, b in ipairs(boxes) do
         local band = Geom:new{ x = b.x - pad, y = b.y, w = b.w + 2 * pad, h = b.h }
-        -- Lines of one sentence can overlap by a pixel or two. Inverting the
-        -- overlap twice would cancel out, and darkening it twice shows a
-        -- stripe, so each band starts where the one above it ends.
-        local above = g.bands[#g.bands]
-        if above and band.y < above.y + above.h and band.x < above.x + above.w and above.x < band.x + band.w then
-            local bottom = band.y + band.h
-            band.y = above.y + above.h
-            band.h = math.max(0, bottom - band.y)
+        -- Bands must not overlap: inverting an overlap twice (night mode)
+        -- cancels out, and darkening it twice shows a stripe. Lines of one
+        -- sentence can overlap by a pixel or two: the lower one starts where
+        -- the one above ends. A line can also come in pieces side by side (a
+        -- drop cap, then the rest of the line): the next piece starts where
+        -- the previous one ends.
+        local prev = g.bands[#g.bands]
+        if prev and band.y < prev.y + prev.h and band.x < prev.x + prev.w and prev.x < band.x + band.w then
+            if band.y >= prev.y + prev.h / 2 then
+                local bottom = band.y + band.h
+                band.y = prev.y + prev.h
+                band.h = math.max(0, bottom - band.y)
+            else
+                local right = band.x + band.w
+                band.x = math.max(band.x, prev.x + prev.w)
+                band.w = math.max(0, right - band.x)
+            end
         end
         g.bands[#g.bands + 1] = band
         g.underlines[#g.underlines + 1] = Geom:new{ x = b.x, y = b.y + b.h - thick, w = b.w, h = thick }
