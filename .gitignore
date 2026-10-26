@@ -1,0 +1,5 @@
+# macOS
+.DS_Store
+
+# KOReader and Reading Ruler source, downloaded for reference only
+/reference/
