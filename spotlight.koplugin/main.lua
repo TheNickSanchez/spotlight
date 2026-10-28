@@ -59,6 +59,7 @@ local DEFAULTS = {
     mode = "manual",     -- "manual" (you move the light) or "auto" (the pacer moves it)
     wpm = cfg.default_wpm, -- Auto speed before your pace is learned, words per minute
     auto_adjust = true,  -- let Auto nudge the speed from your holds, backs and skips
+    invert_taps = false, -- forward on the left three quarters, back on the right quarter
 }
 
 local STYLES = {
@@ -102,7 +103,7 @@ local function xpOffset(xp)
     return tonumber(xp:match("%.(%d+)$")) or 0
 end
 
-local VERSION = "0.5.0 (M5)"
+local VERSION = "0.5.1"
 
 local MENU_SEPARATOR = "----------------------------"
 
@@ -1175,8 +1176,34 @@ function Spotlight:onSpotlightTap(ges)
     -- A text selection is in progress: leave the tap to KOReader.
     if self.ui.highlight and self.ui.highlight.hold_pos then return end
     if self:isKOReaderTapZone(ges.pos) then return end
-    self:onSentenceInput(ges.pos.x < Screen:getWidth() * cfg.back_zone_ratio and -1 or 1)
+    local x = ges.pos.x / Screen:getWidth()
+    local back
+    if self:tapsInverted() then
+        back = x >= 1 - cfg.back_zone_ratio -- back on the right quarter
+    else
+        back = x < cfg.back_zone_ratio      -- back on the left quarter
+    end
+    self:onSentenceInput(back and -1 or 1)
     return true
+end
+
+--- KOReader's own "Invert page turn taps and swipes" (also how right-to-left
+-- books turn pages) is on: its tap zones are mirrored, as in
+-- ReaderView:getTapZones.
+function Spotlight:koreaderTapsInverted()
+    local ok, BD = pcall(require, "ui/bidi")
+    local mirrored_ui = ok and BD.mirroredUILayout and BD.mirroredUILayout() or false
+    return (self.view.inverse_reading_order or false) ~= mirrored_ui
+end
+
+--[[
+Inverted taps: forward on the left three quarters of the screen, back on the
+right quarter, a mirror of the usual layout (the same mirror KOReader uses
+for its own inverted page turns). On when Spotlight's "Invert taps" is on,
+or when KOReader's own tap zones are inverted.
+]]
+function Spotlight:tapsInverted()
+    return self.settings.invert_taps or self:koreaderTapsInverted()
 end
 
 --- A tap or a page key: dir 1 forward, -1 back.
@@ -1780,6 +1807,21 @@ function Spotlight:addToMainMenu(menu_items)
             {
                 text_func = function() return T(_("Mode: %1"), labelFor(MODES, self.settings.mode)) end,
                 sub_item_table = self:getModeMenu(),
+            },
+            {
+                text_func = function()
+                    if self:koreaderTapsInverted() then
+                        return _("Invert taps (on: KOReader's page turn taps are inverted)")
+                    end
+                    return _("Invert taps")
+                end,
+                checked_func = function() return self:tapsInverted() end,
+                enabled_func = function() return not self:koreaderTapsInverted() end,
+                callback = function()
+                    self.settings.invert_taps = not self.settings.invert_taps
+                    self:saveSettings()
+                end,
+                help_text = _("Tap the left three quarters of the screen for the next sentence, and the right quarter for the previous one: handy when the left side of the screen is easier to reach. In Auto mode the same sides skip ahead and go back. Spotlight also does this when KOReader's own \"Invert page turn taps and swipes\" is on."),
             },
             {
                 text_func = function()

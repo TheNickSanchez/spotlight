@@ -294,3 +294,70 @@ test("a repeated page-shown event keeps the lit sentence (restore after open)", 
     plugin:onPageUpdate(1) -- KOReader redraws the same page
     eq(lit(plugin), "Mr. Smith walked home slowly.")
 end)
+
+-- Invert taps ------------------------------------------------------------------
+
+-- Screen is 600 px wide: the back zone is 150 px (a quarter).
+local FAR_LEFT = { x = 60, y = 400 }
+local MIDDLE = { x = 300, y = 400 }
+local FAR_RIGHT = { x = 550, y = 400 }
+
+local function invertItem(plugin)
+    local items = {}
+    plugin:addToMainMenu(items)
+    for _i, item in ipairs(items.spotlight.sub_item_table) do
+        if item.text_func and item.text_func():find("^Invert taps") then return item end
+    end
+end
+
+test("Invert taps: forward on the left three quarters, back on the right quarter", function()
+    local plugin = setup()
+    invertItem(plugin).callback()
+    ok(plugin.settings.invert_taps)
+    tap(plugin, FAR_LEFT)
+    eq(lit(plugin), "It was a dark night.")
+    tap(plugin, MIDDLE)
+    eq(lit(plugin), "Mr. Smith walked home slowly.")
+    tap(plugin, FAR_RIGHT)
+    eq(lit(plugin), "It was a dark night.")
+    invertItem(plugin).callback() -- and back to normal
+    tap(plugin, FAR_LEFT)
+    eq(lit(plugin), "Chapter One")
+end)
+
+test("Invert taps also turns Auto's skip and back around", function()
+    Fake.resetSettings()
+    Fake.seedLearned()
+    local doc = Fake.newDoc(PARAS, PAGES)
+    local plugin = Fake.newPlugin(doc)
+    plugin:setEnabled(true)
+    plugin.settings.invert_taps = true
+    plugin:setMode("auto")
+    tap(plugin, FAR_LEFT)                      -- skip ahead
+    eq(lit(plugin), "It was a dark night.")
+    eq(plugin.session.skips, 1)
+    Fake.advance(1000)
+    tap(plugin, FAR_RIGHT)                     -- back
+    eq(lit(plugin), "Chapter One")
+    eq(plugin.session.backs, 1)
+end)
+
+test("KOReader's own inverted page turns invert Spotlight's taps too", function()
+    local plugin = setup()
+    plugin.view.inverse_reading_order = true   -- e.g. a right-to-left book
+    ok(plugin:tapsInverted())
+    tap(plugin, FAR_LEFT)
+    eq(lit(plugin), "It was a dark night.")
+    local item = invertItem(plugin)
+    ok(item.checked_func() and not item.enabled_func())
+    eq(item.text_func(), "Invert taps (on: KOReader's page turn taps are inverted)")
+end)
+
+test("a mirrored (right-to-left) KOReader interface counts as inverted, like KOReader's own zones", function()
+    local plugin = setup()
+    Fake.mirrored_ui = true
+    ok(plugin:tapsInverted())
+    plugin.view.inverse_reading_order = true    -- inverted twice: back to normal, as in KOReader
+    ok(not plugin:tapsInverted())
+    Fake.mirrored_ui = false
+end)

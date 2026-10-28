@@ -76,6 +76,23 @@ check(sp.current.index == idx, "tap left: previous sentence")
 H.tap(ui, RIGHT[1], RIGHT[2]); paint()
 check(#refreshes == 1 and refreshes[1].mode == "ui", "a sentence step is one 'ui' refresh", refreshes[1] and refreshes[1].mode)
 
+print("== invert taps")
+local menu_items = {}
+sp:addToMainMenu(menu_items)
+local invert_item
+for _i, item in ipairs(menu_items.spotlight.sub_item_table) do
+    if item.text_func and item.text_func() == "Invert taps" then invert_item = item end
+end
+check(invert_item ~= nil, "the menu has Invert taps")
+invert_item.callback()
+idx = sp.current.index
+H.tap(ui, W * 0.1, Hh * 0.5); paint()
+check(sp.current.index == idx + 1, "inverted: a tap on the left goes forward")
+H.tap(ui, W * 0.9, Hh * 0.5); paint()
+check(sp.current.index == idx, "inverted: a tap on the right quarter goes back")
+invert_item.callback()
+check(not sp.settings.invert_taps, "and it switches off again")
+
 print("== across a page break")
 local crossed, steps = nil, 0
 while steps < 120 and not crossed do

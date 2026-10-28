@@ -119,6 +119,8 @@ You move the light.
 |---|---|
 | Tap the right three quarters of the screen | Next sentence |
 | Tap the left quarter | Previous sentence |
+| *With Invert taps on:* tap the left three quarters | Next sentence |
+| *With Invert taps on:* tap the right quarter | Previous sentence |
 | Forward or back page key | Next or previous sentence |
 | Tap a link | Follows the link, as usual |
 | Hold | KOReader's usual dictionary and highlighting |
@@ -130,6 +132,12 @@ You move the light.
   always do.
 - **Sentences across a page break.** The part you can see is lit first. The
   next tap turns the page and lights the rest. Going back works the same way.
+- **Invert taps.** If reaching across the screen is a stretch, turn on
+  Spotlight → **Invert taps**. The zones are mirrored: the left three quarters
+  go forward and the right quarter goes back, so "next" sits under a
+  left-hand thumb. It applies in Auto mode too (skip ahead and back).
+  Spotlight also inverts its taps by itself when KOReader's own "Invert page
+  turn taps and swipes" is on, as it is for right-to-left books.
 - **Per book.** Spotlight remembers the sentence you were on and lights it
   again when you open the book.
 - **Quietly learning.** Every sentence is timed in the background, to learn
@@ -145,6 +153,7 @@ The light moves on its own. Spotlight → **Mode** → **Auto**.
 | Let go | Carries on: the time that was left on the sentence, plus 0.5 s |
 | Quick tap right (or forward key) | Skips ahead one sentence now |
 | Quick tap left (or back key) | Goes back one sentence and carries on from there |
+| *With Invert taps on:* the sides swap | Left skips ahead, the right quarter goes back |
 | Swipe or other page turn | Carries on from the first sentence on the new page |
 | Open a menu | The light waits until it closes |
 
@@ -325,6 +334,7 @@ one, so the file can be imported elsewhere as is. Times are local time.
 |---|---|
 | Spotlight on | Turns Spotlight on or off, for all books |
 | Mode | Manual or Auto (shows learning progress until Auto is ready) |
+| Invert taps | Forward on the left three quarters, back on the right quarter |
 | Speed | Opens the speed panel; shows whose pace applies |
 | Auto-adjust speed | Lets Auto nudge the speed from your holds, backs and skips |
 | Look | Style, band darkness, bar width, night look |
@@ -415,7 +425,7 @@ split by a page break is known as a whole on both pages.
 ## Troubleshooting
 
 Each time a book opens, Spotlight writes a line with its version to the log,
-for example `Spotlight 0.5.0 (M5) : ready, turned off`.
+for example `Spotlight 0.5.1 : ready, turned off`.
 
 - **Kindle:** `koreader/crash.log` on the USB storage.
 - **Mac:** `crash.log` in `~/Library/Application Support/koreader/`.
@@ -437,7 +447,6 @@ a page turn.
   really ends there.
 - While Spotlight is on, tapping a saved highlight moves the light instead of
   opening the highlight's menu. Turn Spotlight off to open it.
-- Right-to-left books: the back zone is always on the left.
 - In illustrated editions, a picture in the middle of a paragraph splits the
   sentence around it, and captions are lit as sentences.
 - Sentences longer than about 200 words that run over a page break may be

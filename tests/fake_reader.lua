@@ -110,6 +110,7 @@ local stubs = {
     },
     ["ui/font"] = { getFace = function(_, name, size) return { name = name, size = size } end },
     ["ui/widget/confirmbox"] = { new = function(_, t) t.confirm = true; return t end },
+    ["ui/bidi"] = { mirroredUILayout = function() return M.mirrored_ui == true end },
     ["ui/widget/keyvaluepage"] = { new = function(_, t) t.kv = true; return t end },
     ["rapidjson"] = require("json_lite"),
     ["util"] = {
@@ -182,6 +183,7 @@ function M.resetSettings()
     M.files = {}
     M.dirs = {}
     M.unwritable = nil
+    M.mirrored_ui = false
     M.tasks = {}
     M.top_widget = nil
     M.clock_ms = 0
