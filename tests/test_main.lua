@@ -349,3 +349,14 @@ test("pieces of one line side by side (a drop cap) are both lit, without overlap
     eq(g.bands[2].x, g.bands[1].x + g.bands[1].w)       -- starts where the drop cap's band ends
     eq(g.bands[2].x + g.bands[2].w, 110 + 1034 + 2)      -- and still reaches the end of the line
 end)
+
+test("_meta.lua and main.lua agree on the version", function()
+    local dir = (arg[0]:match("^(.*)/[^/]*$") or ".") .. "/../spotlight.koplugin/"
+    local meta = dofile(dir .. "_meta.lua")
+    local f = io.open(dir .. "main.lua")
+    local src = f:read("*a")
+    f:close()
+    local version = src:match('local VERSION = "([^"]+)"')
+    ok(meta.version and meta.version:match("^%d+%.%d+%.%d+$"), "meta version " .. tostring(meta.version))
+    eq(meta.version, version)
+end)
