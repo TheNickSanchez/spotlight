@@ -106,7 +106,12 @@ local function round(x) return math.floor(x + 0.5) end
 -- nil when nothing was read.
 function Session:record(ending_pace_wpm)
     if self.sentences == 0 then return nil end
-    local active_s = round(self.active_ms / 1000)
+    -- Round the two parts and add them up, so active_seconds is always
+    -- exactly manual_seconds + auto_seconds (rounding each of the three on
+    -- its own could leave them a second apart).
+    local manual_s = round(self.manual_ms / 1000)
+    local auto_s = round(self.auto_ms / 1000)
+    local active_s = manual_s + auto_s
     return {
         id = self.id,
         date = os.date("%Y-%m-%d", self.started_at),
@@ -114,8 +119,8 @@ function Session:record(ending_pace_wpm)
         ended_at = os.date("%Y-%m-%dT%H:%M:%S", self.last_at),
         book_title = self.book_title,
         active_seconds = active_s,
-        manual_seconds = round(self.manual_ms / 1000),
-        auto_seconds = round(self.auto_ms / 1000),
+        manual_seconds = manual_s,
+        auto_seconds = auto_s,
         sentences = self.sentences,
         words = self.words,
         average_wpm = active_s > 0 and round(self.words * 60 / active_s) or 0,
