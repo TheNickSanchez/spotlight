@@ -103,7 +103,7 @@ local function xpOffset(xp)
     return tonumber(xp:match("%.(%d+)$")) or 0
 end
 
-local VERSION = "0.5.1"
+local VERSION = "0.5.2"
 
 local MENU_SEPARATOR = "----------------------------"
 

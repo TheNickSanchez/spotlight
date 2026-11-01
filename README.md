@@ -429,7 +429,7 @@ split by a page break is known as a whole on both pages.
 ## Troubleshooting
 
 Each time a book opens, Spotlight writes a line with its version to the log,
-for example `Spotlight 0.5.1 : ready, turned off`.
+for example `Spotlight 0.5.2 : ready, turned off`.
 
 - **Kindle:** `koreader/crash.log` on the USB storage.
 - **Mac:** `crash.log` in `~/Library/Application Support/koreader/`.
