@@ -1,0 +1,77 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    name: Desktop tests (LuaJIT)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install LuaJIT
+        run: sudo apt-get update -q && sudo apt-get install -y -q luajit
+      - name: Run the tests
+        run: luajit tests/run.lua
+
+  koreader:
+    # Spotlight inside real KOReader (headless), on a real EPUB: the current
+    # stable release (what most people have) and the latest nightly.
+    name: KOReader ${{ matrix.koreader }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        koreader: [stable, nightly]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download KOReader (Linux build)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pattern='^koreader-linux-x86_64-v.*\.tar\.xz$'
+          if [ "${{ matrix.koreader }}" = stable ]; then
+            release=$(gh api repos/koreader/koreader/releases/latest)
+          else
+            release=$(gh api repos/koreader/koreader/releases/tags/ota)
+          fi
+          asset=$(echo "$release" | jq -r --arg p "$pattern" \
+            '[.assets[] | select(.name | test($p))] | sort_by(.created_at) | last')
+          echo "KOReader: $(echo "$asset" | jq -r .name)"
+          curl -sSfL --retry 3 -o koreader.tar.xz "$(echo "$asset" | jq -r .browser_download_url)"
+          mkdir koreader && tar -xJf koreader.tar.xz -C koreader
+          dir=$(dirname "$(find koreader -maxdepth 3 -name reader.lua | head -1)")
+          echo "KOREADER_DIR=$PWD/$dir" >> "$GITHUB_ENV"
+
+      - name: Cache the test book
+        uses: actions/cache@v4
+        with:
+          path: pride.epub
+          key: book-gutenberg-1342
+
+      - name: Download the test book (Pride and Prejudice, Project Gutenberg)
+        run: |
+          [ -s pride.epub ] || curl -sSfL --retry 3 -o pride.epub \
+            "https://www.gutenberg.org/ebooks/1342.epub3.images"
+
+      - name: Run the end-to-end test
+        env:
+          TMPDIR: ${{ runner.temp }}/e2e
+        run: |
+          mkdir -p "$TMPDIR"
+          tests/koreader/run.sh "$KOREADER_DIR" pride.epub 20
+
+      - name: Keep the log and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-${{ matrix.koreader }}
+          path: ${{ runner.temp }}/e2e
+          if-no-files-found: ignore

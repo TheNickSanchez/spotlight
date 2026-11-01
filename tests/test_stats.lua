@@ -68,6 +68,17 @@ test("a record has plain, descriptive fields", function()
     for k in pairs(r) do ok(documented[k], "undocumented field " .. k) end
 end)
 
+test("active time is always exactly Manual time plus Auto time", function()
+    local s = session()
+    s:activity(0, "manual")
+    s:sentenceRead(10)
+    s:activity(1600, "auto")    -- 1.6 s of Manual reading
+    s:activity(3200, "manual")  -- 1.6 s of Auto
+    local r = s:record(200)
+    -- Rounding each on its own would give 2 + 2 against a total of 3.
+    eq({ r.manual_seconds, r.auto_seconds, r.active_seconds }, { 2, 2, 4 })
+end)
+
 test("nothing read: nothing saved", function()
     eq(session():record(200), nil)
 end)

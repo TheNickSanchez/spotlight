@@ -359,7 +359,8 @@ if rec then
     check(rec.book_title ~= "" and rec.sentences > 40 and rec.words > rec.sentences,
         "it has the book, the sentences and the words")
     check(rec.manual_seconds > 0 and rec.auto_seconds > 0 and rec.active_seconds == rec.manual_seconds + rec.auto_seconds,
-        "reading time is split between Manual and Auto")
+        "reading time is split between Manual and Auto",
+        string.format("%d = %d + %d", rec.active_seconds, rec.manual_seconds, rec.auto_seconds))
     check(rec.holds >= 1 and rec.skip_aheads >= 1 and rec.backs >= 1 and rec.auto_adjust_changes >= 1,
         "holds, skips, backs and auto-adjust changes are counted")
     check(rec.date == os.date("%Y-%m-%d"), "dated today", rec.date)

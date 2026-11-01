@@ -49,6 +49,8 @@ learned from your own reading. Hold anywhere to pause; let go to carry on.
   7 days and the last 30, with trends. Export them all as JSON.
 - 🪶 **Light and safe.** Each page is read once and cached. When Spotlight is
   off, KOReader behaves exactly as normal.
+- 🔒 **Private.** Spotlight never goes online. Your timings, pace and stats
+  stay on your device unless you export them.
 
 ## Contents
 
@@ -64,8 +66,10 @@ learned from your own reading. Hold anywhere to pause; let go to carry on.
 - [How it works](#how-it-works)
 - [Troubleshooting](#troubleshooting)
 - [Known limits](#known-limits)
+- [Privacy](#privacy)
 - [Development](#development)
 - [Credits](#credits)
+- [License](#license)
 
 ## Install
 
@@ -456,6 +460,21 @@ a page turn.
 - Stats count reading with Spotlight on only. KOReader's own Reading
   statistics plugin covers everything else.
 
+## Privacy
+
+Spotlight has no network code: it never connects to anything. Everything it
+keeps is on your device, in KOReader's folders:
+
+- `koreader/settings/spotlight.lua`: your Manual reading timings (the newest
+  400) and the pace learned from them.
+- `koreader/settings/spotlight_stats.json`: your reading sessions.
+- Each book's KOReader settings: the sentence you were on and the book's own
+  pace.
+
+Exporting (Spotlight → Stats → Export stats) writes a copy to your home folder,
+and that's the only time Spotlight writes outside KOReader's folders. To
+remove your timings, pace and stats, delete those two files.
+
 ## Development
 
 ```
@@ -512,3 +531,11 @@ tests/koreader/screenshots.sh path/to/KOReader.app path/to/pride-and-prejudice.e
 - Screenshots show *Pride and Prejudice* by Jane Austen, illustrated by Hugh
   Thomson (George Allen, 1894), from
   [Project Gutenberg](https://www.gutenberg.org/ebooks/1342).
+
+## License
+
+Copyright (C) 2026 Nick Sanchez.
+
+Spotlight is free software, licensed under the
+[GNU Affero General Public License v3.0](LICENSE), the same license as
+KOReader. You can use, change and share it under the same terms.
